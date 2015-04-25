@@ -1,0 +1,66 @@
+#id-date-picker-1, #id-date-picker-2{width:195px};
+input.error { border: 1px solid red; };
+span.unchecked{
+  background:url("/resource/images/unchecked.gif") no-repeat 0px 0px;
+  padding-left: 16px;
+  padding-bottom: 2px;
+  font-weight: bold;
+  color: #EA5200;
+}
+span.checked {
+  background:url("/resource/images/checked.gif") no-repeat 0px 0px;
+}
+
+form span.unchecked{
+    color:red;
+}
+
+form input.unchecked{
+    border: 1px solid #CE7979;
+}
+
+.form-horizontal input.unchecked{
+    border: 1px solid ＃CE7979;
+    background: #FFF7FA;
+}
+select.filter_200{
+    width:200px;
+}
+select.filter_150{
+    width:150px;
+}
+select.filter_100{
+    width:100px;
+}
+
+.input_150{
+    width:150px;
+}
+.input_100{
+    width:100px;
+}
+
+
+
+div.filter_item{
+    width:30%;
+}
+
+input.input_ts_hours{
+    width:30px;
+}
+
+input.input_select_task{
+    width:80px;
+}
+table td{
+    text-align:center;
+}
+
+
+
+input[type=checkbox], input[type=radio] {
+    opacity: 1;
+}
+
+
