@@ -50,7 +50,7 @@
 		<link rel="stylesheet" type="text/css" href="/resource/css/multiselect/jquery.multiselect.css" />
 		<link rel="stylesheet" type="text/css" href="/resource/css/multiselect/style.css" />
 		<link rel="stylesheet" type="text/css" href="/resource/css/multiselect/prettify.css" />
-		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" />
+		<!--link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" /-->
 		<!--script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
 
 		<script type="text/javascript" src="/resource/js/multiselect/jquery.ui.core.js"></script-->
@@ -182,15 +182,19 @@
                     <a href="#" class="dropdown-toggle">
                         <i class="icon-edit"></i><span>供应商管理</span><b class="arrow icon-angle-down"></b> 
                     </a>
+                            <?php
+                            $role = $user['role'];
+                            $deptId = $user['department'];
+                            if(($role==1) || ($deptId==3 || $deptId==1)){
+                            ?>
                     <ul class="submenu" style="display: none;">
                         <li id="li_supplier_listAll"><a href="/supplier/listAll"><i class="icon-double-angle-right"></i>Supplier List</a></li>
 						<?php 
-						$role = $user['role'];
-						if(($role==1) || ($role==2)){
+						if(($role==1) || ($role==7 || $deptId==1)){
 						?>
 								<li id="li_supplier_add"><a href="/supplier/add"><i class="icon-double-angle-right"></i>Add Supplier</a></li>
-						<?php
-						}
+                                                <?php
+                                                }}
 						?>
                     </ul>
                 </li>

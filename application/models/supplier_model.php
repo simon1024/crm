@@ -87,9 +87,10 @@ class Supplier_model extends CI_Model {
         $limit = intval($limit);
         $filterArray = $this->genFilterSql($filter);
 
-        $sql = "select aa.id, aa.no, aa.familyId, aa.chName, aa.enName, aa.companyType, aa.service, aa.city, aa.score 
+        $sql = "select aa.id, aa.no, aa.familyId, aa.chName, aa.enName, aa.companyType, 
+                aa.service, aa.city, aa.score, aa.inquiryCount
                 from 
-                (select s.id as id, chName, enName, service, city, 
+                (select s.id as id, chName, enName, service, city, inquiryCount, 
                  score, s.no as no, country, addr, foundDate, vendorProperty, 
                  subCategory, website, contactor1, contactor2, qualification,
                  ct.tname as companyType, ft.fname as familyId, ca.cname as categoryId
@@ -239,7 +240,45 @@ class Supplier_model extends CI_Model {
 
     }
 
+    function getCountByFamily($familyId) {
+        $familyId = intval($familyId);
+        $sql = "select count(*) from Supplier where familyId=$familyId";
+        $query = $this->db->query($sql);
+        
+    }
+
+    function genSupplierNo($familyId, $id){
+        $id = intval($id);
+        $familyId = intval($familyId);
+        $sql = "select familyId from Supplier where id=$id";
+        $query = $this->db->query($sql);
+        $currentFamilyId = 0;
+        foreach ($query->result_array() as $row){
+            $currentFamilyId = $row['familyId'];
+        }
+
+        if ($currentFamilyId == 0 or $currentFamilyId != $familyId) {
+            //this is a new supplier or familyId has been changed
+            $sql = "select max(no)+1 as no from Supplier where familyId=$familyId";
+            $query = $this->db->query($sql);
+            $no = 0;
+            foreach ($query->result_array() as $row){
+                if ($row['no']) {
+                    $no = $row['no'];
+                }
+            }
+            return $no;
+        } else {
+            return -1;
+        } 
+    }
+
     function update($id, $data){
+        $no = $this->genSupplierNo($data['familyId'], $id);
+        /* show_error($no); */
+        if ($no != -1) {
+            $data['no'] = $no;
+        }
         $this->db->where('id', $id);
         $success = $this->db->update($this->table, $data); 
         $errno = $this->db->_error_number();
@@ -270,18 +309,19 @@ class Supplier_model extends CI_Model {
         $result .= "NO,Chinese Name,English Name,Country,City,Address,Zip Code,Found Date,";
         $result .= "Capital,Staff Num,Company Type,Vendor Property,Service/Product,Family ID,";
         $result .= "Category ID,Sub Category,Website,Contactor1,Position,Telephone NO,Mobilephone NO,";
-        $result .= "Fax NO,Mail,Contactor2,Position,Telphone NO,Mobilephone NO,Fax NO,Mail,Qualification,Score \r\n";
+        $result .= "Fax NO,Mail,Contactor2,Position,Telphone NO,Mobilephone NO,Fax NO,Mail,Qualification,Score,Awarded Total Value\r\n";
 
         $sql = "select *
                 from
                 (select s.id as id, chName, enName, service, city, zcode,
-                 capital, staffNum, score, s.no as no, country, addr, foundDate, 
-                 vendorProperty, subCategory, website, qualification,
+                 capital, staffNum, score, awardedTotal, s.no as no, country, addr, foundDate, 
+                 vp.property as vendorPropertyName, subCategory, website, qualification,
                  contactor1, position1, telPhone1, cellPhone1, fax1, mail1, 
                  contactor2, position2, telPhone2, cellPhone2, fax2, mail2,
                  ct.tname as companyType, ft.fname as familyId, ca.cname as categoryId
                  from (select * from Supplier where 1=1 $filterArray[0]) s
                  left join CompanyType ct on ct.id=s.companyType
+                 left join VendorProperty vp on vp.id=s.vendorProperty
                  left join Family ft on ft.id=s.familyId
                  left join Category ca on ca.id=s.categoryId ";
         if(!empty($filterArray[1])){
@@ -295,19 +335,20 @@ class Supplier_model extends CI_Model {
 
         $query = $this->db->query($sql);
 
-        $fields = array("no", "chName", "enName", "country", "city", "addr", "zcode", "foundDate", 
-                        "capital", "staffNum", "companyType", "vendorProperty", "service", "familyId",
+        $fields = array("noStr", "chName", "enName", "country", "city", "addr", "zcode", "foundDate", 
+                        "capital", "staffNum", "companyType", "vendorPropertyName", "service", "familyId",
                         "categoryId", "subCategory", "website", "contactor1", "position1", "telPhone1",
                         "cellPhone1", "fax1", "mail1", "contactor2", "position2", "telPhone2", "cellPhone2",
-                        "fax2", "mail2", "qualification", "score");
+                        "fax2", "mail2", "qualification", "score", "awardedTotal");
         foreach ($query->result_array() as $row){
+            $row['noStr'] = $row["familyId"] . str_pad($row['no'], 3, "0", STR_PAD_LEFT);
             foreach($fields as $field) {
                 $item = "\"" . strtr($row[$field], "\"", "'") . "\"";
                 $result .= $item . ",";
             }
             $result .= "\r\n";
         }
-        /* show_error($result); */
+        //show_error($result);
 
         return $result;
 

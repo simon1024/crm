@@ -22,8 +22,21 @@ class Score_model extends CI_Model {
 
     }
 
+    function getAwardedTotal($sid){
+        $sql = "select sum(awardedValue) as awardedTotal from Score where Score.sid=$sid";
+        $query = $this->db->query($sql); 
+        $data = array();
+        $awardedTotal = 0;
+        foreach ($query->result_array() as $row){
+            $awardedTotal = $row['awardedTotal'];
+        }
+
+        return $awardedTotal;
+    }
+
     function getTotalScore($sid) {
-        $sql = "select chName, enName, round(avg(capability),2) as capability, 
+        $sql = "select chName, enName, count(*) as inquiryCount, 
+                round(avg(capability),2) as capability, 
                 round(avg(quality),2) as quality, round(avg(compliance),2) as compliance, 
                 round(avg(cooperation),2) as cooperation, round(avg(financial),2) as financial
                 from Score,Supplier
@@ -32,15 +45,19 @@ class Score_model extends CI_Model {
         $query = $this->db->query($sql); 
         $data = array();
         foreach ($query->result_array() as $row){
+            $row['awardedTotal'] = $this->getAwardedTotal($sid);
             if ($row['capability'] == NULL) {
                 $row['total'] = 0;
-                $row['sum'] = 0;
             } else {
-                $row['total'] = round($row['capability'] * 0.25 + $row['quality'] * 0.25
-                                      + $row['compliance'] * 0.1 + $row['cooperation'] * 0.25
-                                      + $row['financial'] * 0.15, 2) ;
-                $row['sum'] = round($row['capability'] + $row['quality'] + $row['compliance'] 
-                                    + $row['cooperation'] + $row['financial'], 2);
+                $row['total'] = round($row['capability'] * 0.20 + $row['quality'] * 0.25
+                                      + $row['compliance'] * 0.10 + $row['cooperation'] * 0.25
+                                      + $row['financial'] * 0.20, 2) ;
+            }
+
+            if ($row['inquiryCount'] > 0) {
+                $row['inquiry'] = 'Yes';
+            }else {
+                $row['inquiry'] = 'No';
             }
 
             $data[] = $row;
@@ -61,8 +78,10 @@ class Score_model extends CI_Model {
             $sid = $data['sid'];
             $totalScore = $this->getTotalScore($sid);
             $score = $totalScore[0]['total'];
+            $inquiryCount = $totalScore[0]['inquiryCount'];
+            $awardedTotal = $totalScore[0]['awardedTotal'];
             $this->db->where('id', $sid);
-            $this->db->update("Supplier", array('score'=>$score)); 
+            $this->db->update("Supplier", array('score'=>$score, 'inquiryCount'=>$inquiryCount, 'awardedTotal'=>$awardedTotal)); 
         }
 
         return array('status'=>$status, 'msg'=>$message);
@@ -84,6 +103,13 @@ class Score_model extends CI_Model {
         $qualification = array("Supplier Survey", "Pre-Qotation", "End User Inquiry", "Others");
         $qualificationResult = array("Approved", "Approved with comments", "Not Approved");
         foreach ($query->result_array() as $row){
+            $row['capability'] = $row['capability'] * 0.2;
+            $row['compliance'] = $row['compliance'] * 0.1;
+            $row['financial'] = $row['financial'] * 0.2;
+            $row['quality'] = $row['quality'] * 0.25;
+            $row['cooperation'] = $row['cooperation'] * 0.25;
+            $row['total'] = $row['capability'] + $row['compliance'] + $row['financial'] + $row['quality'] + $row['cooperation'] ;
+
             $id = $row['id'];
             if($row['projectType']){
                 $row['projectTypeName'] = $projectType[$row['projectType'] - 1];
@@ -122,6 +148,7 @@ class Score_model extends CI_Model {
     }
 
     function delById($id, $sid){
+        /* show_error($sid); */
         $id = intval($id);
         $sid = intval($sid);
         $data = array('id'=>$id);
@@ -135,10 +162,27 @@ class Score_model extends CI_Model {
         }else {
             $totalScore = $this->getTotalScore($sid);
             $score = $totalScore[0]['total'];
+            $inquiryCount = $totalScore[0]['inquiryCount'];
+            $awardedTotal = $totalScore[0]['awardedTotal'];
             $this->db->where('id', $sid);
-            $this->db->update("Supplier", array('score'=>$score)); 
+            $this->db->update("Supplier", array('score'=>$score, 'inquiryCount'=>$inquiryCount, 'awardedTotal'=>$awardedTotal)); 
         }
 
+        return array('status'=>$status, 'msg'=>$message);
+    }
+
+    function delBySupplierId($sid){
+        /* show_error($sid); */
+        $sid = intval($sid);
+        $data = array('sid'=>$sid);
+        $success = $this->db->delete($this->table, $data);
+        $errno = $this->db->_error_number();
+        $message = '';
+        $status = 'ok';
+        if($errno != 0){
+            $status = 'no';
+            $message = "删除失败，错误代码 $errno ";
+        }
         return array('status'=>$status, 'msg'=>$message);
     }
 }
