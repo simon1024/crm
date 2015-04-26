@@ -289,4 +289,5 @@ class Employee_model extends CI_Model {
         return "wrong";
     }
 
+
 }

@@ -65,7 +65,7 @@
 $(function() {
         var availableTags = [
         {projectList}
-                {label:"{name}", value:'{name}'},
+            {label:"{name}", value:'{no}'},
         {/projectList}
         ];
         $( "#project_autocomplete" ).autocomplete({

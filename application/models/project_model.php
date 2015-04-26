@@ -110,6 +110,22 @@ class Project_model extends CI_Model {
         return $data;
     }/*}}}*/
 
+    function getPidByPno($no) {
+        $sql = "select p.id
+        from Project p
+        where  p.status='3' 
+        and type not in (8,9)
+        and no='$no'";
+
+        $query = $this->db->query($sql); 
+        $pid = 0;
+        foreach ($query->result_array() as $row){
+            $pid = $row['id'];
+            break;
+        }
+        return $pid;
+    }
+
     function getProjectListForFinance() {
         $sql = "select p.id,p.no,p.name 
         from Project p
@@ -151,7 +167,7 @@ class Project_model extends CI_Model {
         $sql = "select p.id,p.no,p.name 
         from Project p
         where  p.status='3' and oh_dept=$dept and p.type=8";
-		//show_error($sql);
+        //show_error($sql);
         $query = $this->db->query($sql); 
         $data = array();
         foreach ($query->result_array() as $row){

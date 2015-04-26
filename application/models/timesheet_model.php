@@ -632,13 +632,13 @@ class TimeSheet_model extends CI_Model {
 
     function exportEmployeeTimeSheet4Finance($filters) 
     {
-        $pid = $filters['pid'];
         // uid => ("employeeName" => ename, "employeeNo" => eno, "positionName" => pname, 
         //         "pjList" => pjName => ("dayList" => date => time, "monthList" => month => time))
         // pjName => month => time
         $timeSheetList = $this->groupTimeSheetByPid4FinanceExport($filters, 'Y.m.d');
         $epTimeSheetList = $timeSheetList['ep'];
         $pjTimeSheetList = $timeSheetList['pj'];
+        $employeeList = $this->getAllUids4Finance();
         $monthList = $timeSheetList['monthList'];
         $monthNum = count($monthList);
         $pjNameList = array_keys($pjTimeSheetList);
@@ -657,20 +657,53 @@ class TimeSheet_model extends CI_Model {
             $result .= "$normalizeName" . $commas . ",";
         }
 
-        $result .= "每人每月所有项目工时合计" . $commas . "每人工时合计 \r\n";
+        //if no pid specified, need not count total of each month
+        if ($filters['pid'] == 0) {
+            $result .= "每人每月所有项目工时合计" . $commas . "每人工时合计";
+        }
+        $result .= "\r\n";
         $result .= "项目归属月份,,,";
 
-
-        for($i = 0; $i < count($pjTimeSheetList) + 1; $i++) {
+        for($i = 0; $i < $pjNum; $i++) {
             foreach($monthList as $mon) {
                 $result .= $mon . "月,";
             }
             $result .= "合计,";
         }
+
+        //if no pid specified, need not count total of each month
+        if($filters['pid'] == 0) {
+            foreach($monthList as $mon) {
+                $result .= $mon . "月,";
+            }
+            $result .= "合计,";
+        }
+
         $result .= "\r\n";
 
-        foreach($epTimeSheetList as $ept)
-        {
+        $eachProjectEachMonth = $this->initEachProjectEachMonth($pjNameList, $monthList);
+
+        $partUids = array_keys($epTimeSheetList);
+        foreach($employeeList as $employee) {
+            $eid = $employee['id'];
+            //employee not participate any project, fill with 0;
+            if(!in_array($eid, $partUids)){
+                if($filters['pid'] != 0) {
+                    continue;
+                }
+                if (!$employee['positionName']) {
+                    $employee['positionName'] = 'NULL';
+                }
+                $employee['employeeNo'] = "'".$employee['employeeNo'];
+                $result .= $employee['positionName'] . "," . $employee['employeeNo'] . "," . $employee['employeeName'] . ",";
+                foreach($pjNameList as $pjName) {
+                    $result .= $commasContent . "0," ;
+                }
+                $result .= $commasContent . "0 \r\n" ;
+                continue;
+            }
+
+            $ept = $epTimeSheetList[$eid];
             $employeeName = $ept['employeeName'];
             $employeeNo = "'".$ept['employeeNo'];
             $positionName = $ept['positionName'];
@@ -703,21 +736,63 @@ class TimeSheet_model extends CI_Model {
                         $result .= $pjMonthList[$mon] . ",";
                         $monthTotal[$mon] += $pjMonthList[$mon];
                         $pjTotal += $pjMonthList[$mon];
+                        $eachProjectEachMonth[$pjName][$mon] += $pjMonthList[$mon];
                     }
                 }
                 $result .= $pjTotal . ",";
             }
 
-            $employeeTotal = 0;
+            //if no pid specified, need not count total of each month
+            if ($filters['pid'] == 0) {
+                $employeeTotal = 0;
+                foreach($monthList as $mon) {
+                    $result .= $monthTotal[$mon] . ",";
+                    $employeeTotal += $monthTotal[$mon];
+                }
+                $result .= $employeeTotal ;
+            }
+            $result .= "\r\n";
+        }
+
+        $result .= "各项目单月汇总,,,";
+        $monthTotal = array();
+        foreach($pjNameList as $pjName) {
+            $total = 0;
+            foreach($monthList as $mon) {
+                $result .= $eachProjectEachMonth[$pjName][$mon] . ",";
+                $total += $eachProjectEachMonth[$pjName][$mon];
+                $monthTotal[$mon] += $eachProjectEachMonth[$pjName][$mon];
+            }
+            $result .= $total . ",";
+        }
+
+        //if no pid specified, need not count total of each month
+        if ($filters['pid'] == 0) {
+            $total = 0;
             foreach($monthList as $mon) {
                 $result .= $monthTotal[$mon] . ",";
-                $employeeTotal += $monthTotal[$mon];
+                $total += $monthTotal[$mon];
             }
-            $result .= $employeeTotal . "\r\n";
-
+            $result .= $total;
         }
         
         return $result;
+    }
+
+    function getAllUids4Finance() {
+        $sql = "select e.id as id, e.no as employeeNo, e.name as employeeName, p.name as positionName
+        from Employee e
+        left join PositionType p on e.position=p.id
+        where  e.status='3' 
+        and no not in ('0000000', '0000001', '0000002', '0000003', '0000004', '0000005', '0000006')
+        order by e.position";
+
+        $query = $this->db->query($sql); 
+        $data = array();
+        foreach ($query->result_array() as $row){
+            $data[] = $row;
+        }
+        return $data;
     }
 
     function getProjectListForFinance() {
@@ -770,5 +845,18 @@ class TimeSheet_model extends CI_Model {
                 }
             }
         }
+    }
+
+    function initEachProjectEachMonth($pjNameList, $monthList) {
+        $eachProjectEachMonth = array();
+        foreach($pjNameList as $pjName){
+            $m = array();
+            foreach($monthList as $month) {
+                $m[$month] = 0;
+            }
+            $eachProjectEachMonth[$pjName] = $m;
+        }
+
+        return $eachProjectEachMonth;
     }
 }

@@ -6,17 +6,18 @@ $(function(){
 function downEmployeeReport(){
     var startTime= $('#start_time_1').val();
     var endTime = $('#end_time_1').val();
-    // var searchName = $('#search_username').val();
+    var pjNo = $('#project_autocomplete').val();
 
-    if(startTime ==''){
-        startTime = '0';
+    if (startTime  == '' || endTime == '') {
+        alert('please choose time!');
+        return ;
     }
 
-    //todo
-    if(endTime ==''){
-        endTime = '0';
+    if (startTime > endTime) {
+        alert('start time should be early than end time');
+        return ;
     }
 
-    window.location.href = '/finance/exportEmployeeReport/'+startTime+'/'+endTime;
+    window.location.href = '/finance/exportEmployeeReport/'+startTime+'/'+endTime+'/'+pjNo;
 }
 

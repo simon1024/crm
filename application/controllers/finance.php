@@ -22,6 +22,11 @@ class Finance extends CI_Controller {
     public function exportEmployeeReport() {
         $startTime = ($this->uri->segment(3));
         $endTime = ($this->uri->segment(4));
+        $pjNo = ($this->uri->segment(5));
+        $pid = 0;
+        if($pjNo) {
+            $pid = $this->project_model->getPidByPno($pjNo); 
+        }
 
         if(empty($startTime)){
             $startTime = '';
@@ -37,7 +42,7 @@ class Finance extends CI_Controller {
         $filters = array(
                         'start'=>$startTime,
                         'end'=>$endTime,
-                        'pid'=>0,
+                        'pid'=>$pid,
                     );
 
         $timeSheetList = $this->timesheet_model->exportEmployeeTimeSheet4Finance($filters);
