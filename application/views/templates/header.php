@@ -180,6 +180,14 @@
                 </li>
                 <li class="">
                     <a href="#" class="dropdown-toggle">
+                        <i class="icon-edit"></i><span>财务管理</span><b class="arrow icon-angle-down"></b> 
+                    </a>
+                    <ul class="submenu" style="display: none;">
+                        <li id="li_finance_listAll"><a href="/finance/report"><i class="icon-double-angle-right"></i>统计报表</a></li>
+                    </ul>
+                </li>
+                <li class="">
+                    <a href="#" class="dropdown-toggle">
                         <i class="icon-edit"></i><span>供应商管理</span><b class="arrow icon-angle-down"></b> 
                     </a>
                             <?php

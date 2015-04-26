@@ -110,6 +110,20 @@ class Project_model extends CI_Model {
         return $data;
     }/*}}}*/
 
+    function getProjectListForFinance() {
+        $sql = "select p.id,p.no,p.name 
+        from Project p
+        where  p.status='3' 
+        and type not in (8,9)  
+        limit 0,10000";
+        $query = $this->db->query($sql); 
+        $data = array();
+        foreach ($query->result_array() as $row){
+            $data[] = $row;
+        }
+        return $data;
+    }
+
     function getTimeSheetProjectListByUid($uid){
 		/*
         $sql = "select p.id,p.no,p.name 

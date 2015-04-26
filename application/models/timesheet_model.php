@@ -195,22 +195,19 @@ class TimeSheet_model extends CI_Model {
         $startTime = ($filters['start']);
         $endTime = ($filters['end']);
         $filterUid = $filters['filterUid'];
-        /**
-        $pid = intval($pid);
-        $uid = $user['id'];
-        **/
+
         $filterStr = "";
         if($pid>0){
             $filterStr = " ts.project_id=$pid and ";
         }
-		else if($pid==-1){
-			//todo
-			$filterStr = " ts.type=3 and";
-		}
-		else if($pid==-2){
-			$filterStr = " ts.type=4 and";
-		}
-		else{
+        else if($pid==-1){
+            //todo
+            $filterStr = " ts.type=3 and";
+        }
+        else if($pid==-2){
+            $filterStr = " ts.type=4 and";
+        }
+        else{
             $pids = array();
             $projectList = $this->timesheet_model->getUserPartProjects($user);
             foreach($projectList as $pro){
@@ -238,7 +235,7 @@ class TimeSheet_model extends CI_Model {
                 left join Employee e on ts.uid=e.id
                 left join DeptType dt on e.department=dt.id
                 left join Project p on ts.project_id=p.id
-				left join TaskType tt on tt.id=ts.task_id
+		left join TaskType tt on tt.id=ts.task_id
                 where $filterStr ts.approve_status=4 and ts.status='3'
                 order by ts.startTime asc;
                ";
@@ -265,11 +262,11 @@ class TimeSheet_model extends CI_Model {
             $type = $result['type'];
             list($startDate, $endDate) = explode('~', $range);
             $startTime = strtotime($startDate);
-			$endTime = strtotime($endDate);
-			if ( $endTime < $startTime ) {
-				continue;
-			}
-			$day2Month = array();
+            $endTime = strtotime($endDate);
+            if ( $endTime < $startTime ) {
+                continue;
+            }
+            $day2Month = array();
             $day2Month['day1_hours'] = date($format, strtotime('+0 days', $startTime));
             $day2Month['day2_hours'] = date($format, strtotime('+1 days', $startTime));
             $day2Month['day3_hours'] = date($format, strtotime('+2 days', $startTime));
@@ -280,20 +277,20 @@ class TimeSheet_model extends CI_Model {
 
             try{
                 error_reporting(!E_NOTICE);
-				$i = 0;
-				foreach($day2Month as $day=>$month) {
-					$dayTime = strtotime('+'.$i.' days', $startTime);
-					$i = $i + 1;
-					if ( !empty($start) && ($dayTime < $start || $dayTime > $end) )
-						continue;
+                $i = 0;
+                foreach($day2Month as $day=>$month) {
+                    $dayTime = strtotime('+'.$i.' days', $startTime);
+                    $i = $i + 1;
+                    if ( !empty($start) && ($dayTime < $start || $dayTime > $end) )
+                        continue;
 
-                	$newResult[$month][$uid][$type]['total'] += intval($result[$day]);
-					$newResult[$month][$uid]['employeeName'] = $result['employeeName'];
-					$newResult[$month][$uid]['deptName'] = $result['deptName']; //error
-					$newResult[$month][$uid]['month'] = $month;
-					$newResult[$month][$uid]['projName'] = $result['projName'];
-					$newResult[$month][$uid]['taskName'] = $result['taskName'];
-				}
+                    $newResult[$month][$uid][$type]['total'] += intval($result[$day]);
+                    $newResult[$month][$uid]['employeeName'] = $result['employeeName'];
+                    $newResult[$month][$uid]['deptName'] = $result['deptName']; //error
+                    $newResult[$month][$uid]['month'] = $month;
+                    $newResult[$month][$uid]['projName'] = $result['projName'];
+                    $newResult[$month][$uid]['taskName'] = $result['taskName'];
+                }
             }catch(Exception $e){
             }
         }
@@ -311,14 +308,14 @@ class TimeSheet_model extends CI_Model {
             $range = $result['range_key'];
             $uid = $result['uid'];
             $type = $result['type'];
-			$projName = $result['projName'];
-			$taskName = $result['taskName'];
+            $projName = $result['projName'];
+            $taskName = $result['taskName'];
             list($startDate, $endDate) = explode('~', $range);
             $startTime = strtotime($startDate);
             $endTime = strtotime($endDate);
-			if ( $startTime > $endTime) { 
-				continue;
-			}
+            if ( $startTime > $endTime) { 
+                continue;
+            }
             $m1_hours = date($format, strtotime('+0 days', $startTime));
             $m2_hours = date($format, strtotime('+1 days', $startTime));
             $m3_hours = date($format, strtotime('+2 days', $startTime));
@@ -329,24 +326,25 @@ class TimeSheet_model extends CI_Model {
 
             try{
                 error_reporting(!E_NOTICE);
-				$dayList = array($m1_hours=>'day1_hours', $m2_hours=>'day2_hours', $m3_hours=>'day3_hours', $m4_hours=>'day4_hours', $m5_hours=>'day5_hours', $m6_hours=>'day6_hours', $m7_hours=>'day7_hours');
-				$i = 0;
-				foreach($dayList as $date=>$day) {
-					$dayTime = strtotime('+'.$i.' days', $startTime);
-					$i = $i + 1;
-					if ( !empty($start) && ($dayTime < $start || $dayTime > $end) )
-						continue;
+                $dayList = array($m1_hours=>'day1_hours', $m2_hours=>'day2_hours', $m3_hours=>'day3_hours', $m4_hours=>'day4_hours', $m5_hours=>'day5_hours', $m6_hours=>'day6_hours', $m7_hours=>'day7_hours');
+                $i = 0;
+                foreach($dayList as $date=>$day) {
+                    $dayTime = strtotime('+'.$i.' days', $startTime);
+                    $i = $i + 1;
+                    if ( !empty($start) && ($dayTime < $start || $dayTime > $end) )
+                        continue;
 
-					$newResult[$date][$uid][$projName][$taskName] += intval($result[$day]);
-					$newResult[$date][$uid]['employeeName'] = $result['employeeName'];
-					$newResult[$date][$uid]['deptName'] = $result['deptName']; 
-					$newResult[$date][$uid]['month'] = $date;
-				}
+                    $newResult[$date][$uid][$projName][$taskName] += intval($result[$day]);
+                    $newResult[$date][$uid]['employeeName'] = $result['employeeName'];
+                    $newResult[$date][$uid]['deptName'] = $result['deptName']; 
+                    $newResult[$date][$uid]['month'] = $date;
+                }
             }catch(Exception $e){
             }
         }
         return $newResult;
     }
+
     function getSubmittedTimeSheet($uid, $timeRange, $submitIds){/*{{{*/
         $uid = intval($uid);
         $submitIds = implode(',', $submitIds);
@@ -476,11 +474,12 @@ class TimeSheet_model extends CI_Model {
 
     function extractUserList($timeSheetList){
         $userList = array();
+        // day => item
         foreach($timeSheetList as $item){
             foreach($item as $uid=>$info){
                 $userList[$uid] = $info;
             }
-			//show_error(implode(', ', array_keys($userLists)));
+            //show_error(implode(', ', array_keys($userLists)));
         }
         return $userList;
     }
@@ -522,5 +521,254 @@ class TimeSheet_model extends CI_Model {
             return $result;
     }
 
+    //get timesheet list filter by pid and time
+    function getTimeSheetByPid4Finance($filters) {
+        $pid = intval($filters['pid']);
+        $startTime = ($filters['start']);
+        $endTime = ($filters['end']);
 
+        $filterStr = "";
+        if($pid>0){
+            $filterStr = " ts.project_id=$pid and ";
+        }
+        else if($pid==-1){// for overhead
+            //todo
+            $filterStr = " ts.type=3 and";
+        }
+        else if($pid==-2){// for leave
+            $filterStr = " ts.type=4 and";
+        }
+        else{
+            $pids = array();
+            $projectList = $this->timesheet_model->getProjectListForFinance();
+            foreach($projectList as $pro){
+               $pids[] = $pro['id'];
+            }
+            if(!empty($pids)){
+                $pids = implode(',',$pids);
+                $filterStr = " ts.project_id in ($pids) and ";
+            }
+        }
+
+        if(!empty($startTime)){
+            $min_startTime = date('Y-m-d H:i:s', strtotime($startTime)-604800); // 604800 is one week
+            $filterStr .= " ts.startTime>='{$min_startTime}' and ts.startTime<='$endTime' and  ";
+        }
+        
+        $sql = "select ts.uid,ts.type, employeeNo, employeeName, positionName, p.name as projName, 
+                range_key, day1_hours, day2_hours,day3_hours,day4_hours,day5_hours,day6_hours,day7_hours
+                from TimeSheet ts
+                left join 
+                (select Employee.id as eid, no as employeeNo, Employee.name as employeeName, PositionType.name as positionName
+                 from Employee 
+                 left join PositionType on Employee.position=PositionType.id
+                )ep on ts.uid=ep.eid
+                left join Project p on ts.project_id=p.id
+                where $filterStr ts.approve_status=4 and ts.status='3'
+                order by ep.positionName;
+               ";
+
+        /* show_error($sql); */
+        $results = $this->getResultBySql($sql);
+        if(!$results){
+           return array();
+        }
+
+        return $results;
+    }
+
+    function groupTimeSheetByPid4FinanceExport($filters, $format) 
+    {
+        //
+        $start = strtotime($filters['start']);
+        $end = strtotime($filters['end']);
+        $monthList = $this->getMonthList($start, $end);
+
+        $results = $this->getTimeSheetByPid4Finance($filters);
+        $epTimeSheetList = array();
+        $pjTimeSheetList = array();
+        foreach($results as $result){
+            $range = $result['range_key'];
+            $uid = $result['uid'];
+            $type = $result['type'];
+            $projName = $result['projName'];
+            list($startDate, $endDate) = explode('~', $range);
+            $startTime = strtotime($startDate);
+            $endTime = strtotime($endDate);
+            if ( $startTime > $endTime) {
+                continue;
+            }
+
+            try{
+                error_reporting(!E_NOTICE);
+                $dayList = array('day1_hours', 'day2_hours', 'day3_hours', 
+                                 'day4_hours', 'day5_hours', 'day6_hours', 'day7_hours');
+                $i = 0;
+                foreach($dayList as $day) {
+                    $dayTime = strtotime('+'.$i.' days', $startTime);
+
+                    $i = $i + 1;
+                    if ( !empty($start) && ($dayTime < $start || $dayTime > $end) )
+                        continue;
+
+                    $dayTimeStr = date($format, $dayTime);
+                    $monthStr = date("Y.m", $dayTime);
+                    $epTimeSheetList[$uid]['pjList'][$projName]['dayList'][$dayTimeStr] += intval($result[$day]);
+                    $epTimeSheetList[$uid]['pjList'][$projName]['monthList'][$monthStr] += intval($result[$day]);
+                    $pjTimeSheetList[$projName][$monthStr] += intval($result[$day]);
+                }
+                $epTimeSheetList[$uid]['employeeName'] = $result['employeeName'];
+                $epTimeSheetList[$uid]['employeeNo'] = $result['employeeNo'];
+                $epTimeSheetList[$uid]['positionName'] = $result['positionName'];
+
+            }catch(Exception $e){
+            }
+        }
+
+        $this->alignTimeSheet($epTimeSheetList, $pjTimeSheetList, $monthList);
+
+        return array("ep" => $epTimeSheetList, "pj" => $pjTimeSheetList, "monthList" => $monthList);
+    }
+
+    function exportEmployeeTimeSheet4Finance($filters) 
+    {
+        $pid = $filters['pid'];
+        // uid => ("employeeName" => ename, "employeeNo" => eno, "positionName" => pname, 
+        //         "pjList" => pjName => ("dayList" => date => time, "monthList" => month => time))
+        // pjName => month => time
+        $timeSheetList = $this->groupTimeSheetByPid4FinanceExport($filters, 'Y.m.d');
+        $epTimeSheetList = $timeSheetList['ep'];
+        $pjTimeSheetList = $timeSheetList['pj'];
+        $monthList = $timeSheetList['monthList'];
+        $monthNum = count($monthList);
+        $pjNameList = array_keys($pjTimeSheetList);
+        $pjNum = count($pjNameList);
+        $commas = "";
+        $commasContent = "";
+        for($i = 0; $i < $monthNum ; $i++) {
+            $commas .= ",";
+            $commasContent .= "0,";
+        }
+            
+        // echo header.
+        $result = "项目名称,,,";
+        foreach($pjTimeSheetList as $pjName=>$timeSheet) {
+            $normalizeName = str_replace(',', ';', $pjName);
+            $result .= "$normalizeName" . $commas . ",";
+        }
+
+        $result .= "每人每月所有项目工时合计" . $commas . "每人工时合计 \r\n";
+        $result .= "项目归属月份,,,";
+
+
+        for($i = 0; $i < count($pjTimeSheetList) + 1; $i++) {
+            foreach($monthList as $mon) {
+                $result .= $mon . "月,";
+            }
+            $result .= "合计,";
+        }
+        $result .= "\r\n";
+
+        foreach($epTimeSheetList as $ept)
+        {
+            $employeeName = $ept['employeeName'];
+            $employeeNo = "'".$ept['employeeNo'];
+            $positionName = $ept['positionName'];
+            if(!$positionName) {
+                $positionName = 'NULL';
+            }
+
+            $result .= $positionName . "," . $employeeNo . "," . $employeeName . ",";
+
+            $pjList = $ept['pjList'];
+            $userPartPjNames = array_keys($ept['pjList']);
+            $monthTotal = array();
+            foreach($monthList as $mon) {
+                $monthTotal[$mon] = 0;
+            }
+
+            foreach($pjNameList as $pjName) {
+                if (!in_array($pjName, $userPartPjNames)) {
+                    $result .= $commasContent . "0," ;
+                    continue;
+                }
+
+                $pjMonthList = $ept['pjList'][$pjName]['monthList'];
+                $userPartMons = array_keys($pjMonthList);
+                $pjTotal = 0;
+                foreach($monthList as $mon) {
+                    if (!in_array($mon, $userPartMons)) {
+                        $result .= "0,";
+                    }else {
+                        $result .= $pjMonthList[$mon] . ",";
+                        $monthTotal[$mon] += $pjMonthList[$mon];
+                        $pjTotal += $pjMonthList[$mon];
+                    }
+                }
+                $result .= $pjTotal . ",";
+            }
+
+            $employeeTotal = 0;
+            foreach($monthList as $mon) {
+                $result .= $monthTotal[$mon] . ",";
+                $employeeTotal += $monthTotal[$mon];
+            }
+            $result .= $employeeTotal . "\r\n";
+
+        }
+        
+        return $result;
+    }
+
+    function getProjectListForFinance() {
+        $sql = "select p.id,p.no,p.name
+        from Project p
+        where  p.status='3'
+        and type not in (8,9)
+        limit 0,10000";
+        $query = $this->db->query($sql);
+        $data = array();
+        foreach ($query->result_array() as $row){
+            $data[] = $row;
+        }
+        return $data;
+    }
+
+    function getMonthList($start, $end) {
+        $monthList = array();
+
+        $startTime = strtotime(date('Ym01', $start));
+        $endTime = strtotime(date('Ym01', $end));
+
+        while($startTime <= $end) {
+            $month = date('Y.m', $startTime );
+            array_push($monthList, $month);
+            $startTime = strtotime('next month', $startTime);
+        }
+
+        return $monthList;
+    }
+
+    function alignTimeSheet($epTimeSheetList, $pjTimeSheetList, $monthList) 
+    {
+        foreach($epTimeSheetList as $ept) {
+            $pjList = $ept['pjList'];
+            foreach($pjList as $pj) {
+                $mList = $pj['monthList'];
+                foreach($monthList as $month) {
+                    if (!in_array($month, array_keys($mList) )) {
+                        $mList[$month] = 0;
+                    }
+                }
+            }
+        }
+
+        foreach($pjTimeSheetList as $mList) {
+            foreach($monthList as $month) {
+                if (!in_array($month, array_keys($mList) )) {
+                    $mList[$month] = 0;
+                }
+            }
+        }
+    }
 }

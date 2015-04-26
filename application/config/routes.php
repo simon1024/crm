@@ -50,6 +50,9 @@ $route['project'] = 'project';
 $route['timesheet/(:any)'] = 'timesheet/$1';
 $route['timesheet'] = 'timesheet';
 
+$route['finance/(:any)'] = 'finance/$1';
+$route['finance'] = 'finance';
+
 $route['supplier/(:any)'] = 'supplier/$1';
 $route['supplier'] = 'supplier';
 

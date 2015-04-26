@@ -651,21 +651,19 @@ class TimeSheet extends CI_Controller {
         $this->load->view('templates/footer');
     }
 
-
-
-    // 审批
     public function report(){
         $user  = $this->getSessionUserInfo();
         $tprojectList = $this->timesheet_model->getUserPartProjects($user);
 
-		$projectList = array();
-		$projectList[] = array( 'id'=>-1, 'name'=>'OVERHEAD');
-		$projectList[] = array( 'id'=>-2, 'name'=>'LEAVE'); 
-		//show_error(implode(', ', $projectList));
-		foreach ($tprojectList as $p ){
-			if ( $p['name'] != 'OVERHEAD' && $p['name'] != 'LEAVE' )
-				$projectList[] = $p;
-		}
+        $projectList = array();
+        $projectList[] = array( 'id'=>-1, 'name'=>'OVERHEAD');
+        $projectList[] = array( 'id'=>-2, 'name'=>'LEAVE'); 
+        //show_error(implode(', ', $projectList));
+        foreach ($tprojectList as $p ){
+            if ( $p['name'] != 'OVERHEAD' && $p['name'] != 'LEAVE' )
+                $projectList[] = $p;
+        }
+
         $pid = intval($this->uri->segment(3));
         $dept = intval($this->uri->segment(4));
         $startTime = ($this->uri->segment(5));
