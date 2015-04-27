@@ -6,7 +6,7 @@ $(function(){
 function downEmployeeReport(){
     var startTime= $('#start_time_1').val();
     var endTime = $('#end_time_1').val();
-    var pjNo = $('#project_autocomplete').val();
+    // var pjNo = $('#project_autocomplete').val();
 
     if (startTime  == '' || endTime == '') {
         alert('please choose time!');
@@ -18,7 +18,7 @@ function downEmployeeReport(){
         return ;
     }
 
-    window.location.href = '/finance/exportEmployeeReport/'+startTime+'/'+endTime+'/'+pjNo;
+    window.location.href = '/finance/exportEmployeeReport/'+startTime+'/'+endTime;
 }
 
 function downProjectReport(){
@@ -36,5 +36,9 @@ function downProjectReport(){
     }
 
     window.location.href = '/finance/exportProjectReport/'+startTime+'/'+endTime;
+}
+
+function downOneProjectReport() {
+
 }
 
