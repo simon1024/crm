@@ -555,7 +555,7 @@ class TimeSheet_model extends CI_Model {
             $filterStr .= " ts.startTime>='{$min_startTime}' and ts.startTime<='$endTime' and  ";
         }
         
-        $sql = "select ts.uid,ts.type, employeeNo, employeeName, positionName, p.name as projName, 
+        $sql = "select ts.uid,ts.type, employeeNo, employeeName, positionName, p.name as projName, p.no as projNo,
                 range_key, day1_hours, day2_hours,day3_hours,day4_hours,day5_hours,day6_hours,day7_hours
                 from TimeSheet ts
                 left join 
@@ -587,11 +587,14 @@ class TimeSheet_model extends CI_Model {
         $results = $this->getTimeSheetByPid4Finance($filters);
         $epTimeSheetList = array();
         $pjTimeSheetList = array();
+        $pjNoList = array();
         foreach($results as $result){
             $range = $result['range_key'];
             $uid = $result['uid'];
             $type = $result['type'];
             $projName = $result['projName'];
+            $projNo = $result['projNo'];
+            $pjNoList[$projName] = $projNo;
             list($startDate, $endDate) = explode('~', $range);
             $startTime = strtotime($startDate);
             $endTime = strtotime($endDate);
@@ -627,7 +630,7 @@ class TimeSheet_model extends CI_Model {
 
         $this->alignTimeSheet($epTimeSheetList, $pjTimeSheetList, $monthList);
 
-        return array("ep" => $epTimeSheetList, "pj" => $pjTimeSheetList, "monthList" => $monthList);
+        return array("ep" => $epTimeSheetList, "pj" => $pjTimeSheetList, "monthList" => $monthList, "noList" => $pjNoList);
     }
 
     function exportEmployeeTimeSheet4Finance($filters) 
@@ -776,6 +779,59 @@ class TimeSheet_model extends CI_Model {
             $result .= $total;
         }
         
+        return $result;
+    }
+
+    function exportProjectTimeSheet4Finance($filters) {
+        // pjName => month => time
+        $timeSheetList = $this->groupTimeSheetByPid4FinanceExport($filters, 'Y.m.d');
+        $pjTimeSheetList = $timeSheetList['pj'];
+        $pjNoList = $timeSheetList['noList'];
+        $monthList = $timeSheetList['monthList'];
+        $monthNum = count($monthList);
+        $pjNameList = array_keys($pjTimeSheetList);
+        $pjNum = count($pjNameList);
+        $commasContent = "";
+        for($i = 0; $i < $monthNum + 1; $i++) {
+            $commasContent .= "0,";
+        }
+        //echo header
+        $result = "序号,项目名称,编号,";
+        foreach($monthList as $mon) {
+            $result .= $mon . "月工时,";
+        }
+        $result .= "工时合计\r\n";
+        $seqNo = 0;
+        $monthTotal = array();
+        foreach($pjNameList as $pjName) {
+            $seqNo += 1;
+            $pno = $pjNoList[$pjName];
+            $normalizeName = str_replace(',', ';', $pjName);
+            $result .= $seqNo . "," . $normalizeName . "," . $pno . ",";
+            $pjMonthList = $pjTimeSheetList[$pjName];
+            $total = 0;
+            $mList = array_keys($pjMonthList);
+            foreach($monthList as $mon) {
+                if(!in_array($mon, $mList)){
+                    $result .= "0,";
+                    $monthTotal[$mon] += 0;
+                    continue;
+                }
+
+                $result .= $pjMonthList[$mon] . ",";
+                $total += $pjMonthList[$mon];
+                $monthTotal[$mon] += $pjMonthList[$mon];
+            }
+            $result .= $total . "\r\n";
+        }
+        $result .= ",合计,,";
+        $allTotal = 0;
+        foreach($monthList as $mon) {
+            $result .= $monthTotal[$mon] . ",";
+            $allTotal += $monthTotal[$mon];
+        }
+        $result .= $allTotal;
+
         return $result;
     }
 

@@ -56,6 +56,30 @@ class Finance extends CI_Controller {
     }
 
     public function exportProjectReport() {
+        $startTime = ($this->uri->segment(3));
+        $endTime = ($this->uri->segment(4));
 
+        if(empty($startTime)){
+            $startTime = '';
+        }else{
+            $startTime = date('Y-m-d H:i:s', strtotime($startTime));
+        }
+        if(empty($endTime)){
+            $endTime = '';
+        }else{
+            $endTime = date('Y-m-d H:i:s', strtotime($endTime));
+        }
+
+        $filters = array(
+                        'start'=>$startTime,
+                        'end'=>$endTime,
+                        'pid'=>0,
+                    );
+
+        $timeSheetList = $this->timesheet_model->exportProjectTimeSheet4Finance($filters);
+        /* $timeSheetList = iconv('utf-8', 'gbk', $timeSheetList); */
+        header("Content-Type: application/vnd.ms-excel; charset=gbk");
+        $this->load->helper('download_helper');
+        force_download('timeCostOfEachProject.csv', $timeSheetList);
     }
 }
