@@ -29,7 +29,7 @@ class Employee extends CI_Controller {
                     'posList' => $posList,
                     'roleList' => $roleList,
                     'employeeList' => $employeeList,
-					'positionsOfDept' => $positionsOfDept,
+                    'positionsOfDept' => $positionsOfDept,
                     );
         $this->load->library('parser');
         $this->load->view('templates/header', $data);

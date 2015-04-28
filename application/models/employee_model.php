@@ -140,11 +140,11 @@ class Employee_model extends CI_Model {
     function del(){
     }
 
-	/* 
-	// old function, just set status to 9 for del
+    // old function, just set status to 9 for del
     function delById($id){
         $id = intval($id);
-        $data = array('status'=>'9');
+        $curTime = date('Y-m-d 00:00:00');
+        $data = array('status'=>9, 'leaveTime'=>$curTime);
         $this->db->where('id', $id);
         $success = $this->db->update($this->table, $data); 
         $errno = $this->db->_error_number();
@@ -156,8 +156,8 @@ class Employee_model extends CI_Model {
         }
         return array('status'=>$status, 'msg'=>$message);
     }
-	*/
 
+    /*
     function delById($id){
         $id = intval($id);
         $data = array('id'=>$id);
@@ -171,6 +171,7 @@ class Employee_model extends CI_Model {
         }
         return array('status'=>$status, 'msg'=>$message);
     }
+    */
 
     function getBasicInfoById($id){
         $id = intval($id);
