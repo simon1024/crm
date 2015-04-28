@@ -212,7 +212,8 @@ class Project extends CI_Controller {
                             'price',
                         );
             $model = $this->formDataToModel($array, 'post');
-			$this->addProject($model);
+            $model['addTime'] = date('Y-m-d H:i:00');
+            $this->addProject($model);
         }
     }
 

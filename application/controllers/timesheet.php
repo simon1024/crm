@@ -198,9 +198,9 @@ class TimeSheet extends CI_Controller {
         $type = $model['type'];
         $timeRange = $model['range_key'];
 
-		// normal+OH+leave <= 8
-		if( $type!=2 && $action=="add" ) {
-			$totalHoursExceptOverTime = $this->timesheet_model->getTotalTimeExceptOverTime($uid, $timeRange);
+        // normal+OH+leave <= 8
+        if( $type!=2 && $action=="add" ) {
+            $totalHoursExceptOverTime = $this->timesheet_model->getTotalTimeExceptOverTime($uid, $timeRange);
             if($model['day1_hours'] + intval($totalHoursExceptOverTime['day1_hours'])>$normalHours
             || $model['day2_hours'] + intval($totalHoursExceptOverTime['day2_hours'])>$normalHours
             || $model['day3_hours'] + intval($totalHoursExceptOverTime['day3_hours'])>$normalHours

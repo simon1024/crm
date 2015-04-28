@@ -39,6 +39,20 @@ function downProjectReport(){
 }
 
 function downOneProjectReport() {
+    var startTime= $('#start_time_3').val();
+    var endTime = $('#end_time_3').val();
+    var pjNo = $('#project_autocomplete').val();
 
+    if (pjNo == '') {
+        alert('please choose project!');
+        return ;
+    }
+
+    if(startTime != '' && endTime != '' && startTime > endTime) {
+        alert('start time should be early than end time');
+        return ;
+    }
+
+    window.location.href = '/finance/exportOneProjectReport/'+pjNo+'/'+startTime+'/'+endTime;
 }
 

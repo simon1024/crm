@@ -559,9 +559,11 @@ class TimeSheet_model extends CI_Model {
                 range_key, day1_hours, day2_hours,day3_hours,day4_hours,day5_hours,day6_hours,day7_hours
                 from TimeSheet ts
                 left join 
-                (select Employee.id as eid, no as employeeNo, Employee.name as employeeName, PositionType.name as positionName
+                (select Employee.id as eid, no as employeeNo, Employee.name as employeeName, 
+                 PositionType.name as positionName
                  from Employee 
                  left join PositionType on Employee.position=PositionType.id
+                 where leaveTime>='$startTime' 
                 )ep on ts.uid=ep.eid
                 left join Project p on ts.project_id=p.id
                 where $filterStr ts.approve_status=4 and ts.status='3'
@@ -861,6 +863,22 @@ class TimeSheet_model extends CI_Model {
         $data = array();
         foreach ($query->result_array() as $row){
             $data[] = $row;
+        }
+        return $data;
+    }
+
+    function getTimeRangeOfProjectForFinance($pno) {
+        $sql = "select addTime, startTime, endTime
+        from Project p
+        where  p.status='3' and p.no='$pno'";
+
+        $query = $this->db->query($sql);
+        $data = array();
+        foreach ($query->result_array() as $row){
+            $data['startTime'] = $row['startTime'];
+            $data['endTime'] = $row['endTime'];
+            $data['addTime'] = $row['addTime'];
+            break;
         }
         return $data;
     }
