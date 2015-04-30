@@ -101,6 +101,7 @@ class Employee extends CI_Controller {
                             'mobile',
                             'birthday',
                             'joinDate',
+                            'mail',
                             'role'
                         );
             $model = $this->formDataToModel($array, 'post');
