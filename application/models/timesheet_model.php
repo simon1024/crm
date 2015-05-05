@@ -687,8 +687,14 @@ class TimeSheet_model extends CI_Model {
         $result .= "\r\n";
 
         $eachProjectEachMonth = $this->initEachProjectEachMonth($pjNameList, $monthList);
-
         $partUids = array_keys($epTimeSheetList);
+        $allUids = array_keys($employeeList);
+        $diffUids = array_diff($partUids, $allUids);
+        foreach($diffUids as $uid) {
+            $employeeList[$uid] = array('id'=>$uid);
+            $epTimeSheetList[$uid]['positionName'] = '离职';
+        }
+
         foreach($employeeList as $employee) {
             $eid = $employee['id'];
             //employee not participate any project, fill with 0;
@@ -848,7 +854,7 @@ class TimeSheet_model extends CI_Model {
         $query = $this->db->query($sql); 
         $data = array();
         foreach ($query->result_array() as $row){
-            $data[] = $row;
+            $data[$row['id']] = $row;
         }
         return $data;
     }
