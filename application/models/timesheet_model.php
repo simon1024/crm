@@ -555,8 +555,9 @@ class TimeSheet_model extends CI_Model {
             $filterStr .= " ts.startTime>='{$min_startTime}' and ts.startTime<='$endTime' and  ";
         }
         
-        $sql = "select ts.uid,ts.type, employeeNo, employeeName, positionName, p.name as projName, p.no as projNo,
-                range_key, day1_hours, day2_hours,day3_hours,day4_hours,day5_hours,day6_hours,day7_hours
+        $sql = "select ts.uid,ts.type, employeeNo, employeeName, positionName, pt.name as projName, pt.no as projNo,
+                range_key, day1_hours, day2_hours,day3_hours,day4_hours,day5_hours,day6_hours,day7_hours,
+                pt.ptype as ptype, pt.startTime as pstartTime, pt.endTime as pendTime, pt.hours as hours, pt.total_price as total_price
                 from TimeSheet ts
                 left join 
                 (select Employee.id as eid, no as employeeNo, Employee.name as employeeName, 
@@ -565,7 +566,12 @@ class TimeSheet_model extends CI_Model {
                  left join PositionType on Employee.position=PositionType.id
                  where leaveTime>='$startTime' 
                 )ep on ts.uid=ep.eid
-                left join Project p on ts.project_id=p.id
+                left join 
+                (select p.id as id, p.no as no, p.name as name, t.name as ptype, p.startTime as startTime, p.endTime as endTime, hours, total_price
+                 from Project p
+                 left join ProjectType t on p.type=t.id
+                )pt
+                on ts.project_id=pt.id
                 where $filterStr ts.approve_status=4 and ts.status='3'
                 order by ep.positionName;
                ";
@@ -596,7 +602,7 @@ class TimeSheet_model extends CI_Model {
             $type = $result['type'];
             $projName = $result['projName'];
             $projNo = $result['projNo'];
-            $pjNoList[$projName] = $projNo;
+            $pjNoList[$projName] = array('no'=>$projNo, 'type'=>$result['ptype'], 'hours'=>$result['hours'], 'start'=>$result['pstartTime'], 'end'=>$result['pendTime'], 'total_price'=>$result['total_price']);
             list($startDate, $endDate) = explode('~', $range);
             $startTime = strtotime($startDate);
             $endTime = strtotime($endDate);
@@ -804,7 +810,7 @@ class TimeSheet_model extends CI_Model {
             $commasContent .= "0,";
         }
         //echo header
-        $result = "序号,项目名称,编号,";
+        $result = "序号,项目名称,编号,项目类型,合同金额,设定工时,开工日期,完工日期,";
         foreach($monthList as $mon) {
             $result .= $mon . "月工时,";
         }
@@ -813,9 +819,14 @@ class TimeSheet_model extends CI_Model {
         $monthTotal = array();
         foreach($pjNameList as $pjName) {
             $seqNo += 1;
-            $pno = $pjNoList[$pjName];
+            $pno = $pjNoList[$pjName]['no'];
+            $ptype = $pjNoList[$pjName]['type'];
+            $pstart = $pjNoList[$pjName]['start'];
+            $pend = $pjNoList[$pjName]['end'];
+            $phours = $pjNoList[$pjName]['hours'];
+            $ptotalPrice = $pjNoList[$pjName]['total_price'];
             $normalizeName = str_replace(',', ';', $pjName);
-            $result .= $seqNo . "," . $normalizeName . "," . $pno . ",";
+            $result .= $seqNo . "," . $normalizeName . "," .$pno.",".$ptype.",".$phours.",".$ptotalPrice.",". $pstart . ",".$pend.",";
             $pjMonthList = $pjTimeSheetList[$pjName];
             $total = 0;
             $mList = array_keys($pjMonthList);
@@ -832,7 +843,7 @@ class TimeSheet_model extends CI_Model {
             }
             $result .= $total . "\r\n";
         }
-        $result .= ",合计,,";
+        $result .= ",合计,,,,,,,";
         $allTotal = 0;
         foreach($monthList as $mon) {
             $result .= $monthTotal[$mon] . ",";
